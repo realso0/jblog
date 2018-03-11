@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="user">
+
+	<resultMap type="com.javaex.vo.UserVo" id="resultMapList">
+		<result column="user_no" property="userNo" />
+		<result column="id" property="id" />
+		<result column="user_name" property="userName" />
+		<result column="password" property="password" /> <!-- column이 db변수이름, property가 vo변수이름 -->
+		<result column="join_date" property="joinDate" /> <!-- db변수이름을 vo변수이름으로 변경 -->
+	</resultMap>
+	
+	<insert id="insertJoin" parameterType="com.javaex.vo.UserVo"> <!-- parameterType은 입력받는 값으로 클래스이름을 적어줌. -->
+		<selectKey keyProperty="userNo" resultType="int" order="BEFORE">
+				select seq_users_no.nextval from dual
+		</selectKey>
+		<![CDATA[ 
+			insert into users
+			values (#{userNo}, #{id}, #{userName}, #{password}, sysdate)
+		]]> <!-- 이전에 쓰던 물음표(?) 대신에 Vo의 멤버변수로 이름을 적어준다. -->
+	</insert>
+	
+	<select id="getListByIdPassword" parameterType="com.javaex.vo.UserVo" resultMap="resultMapList"> <!-- db에서 값을 가져오겠다 resultmap은 db로 부터 값을 읽어올때, 변수이름 맞춰주어 결과데이터가 저장될 데이터의 타입, select에서 이용-->
+		<![CDATA[
+			select user_no, id, user_name, password, join_date
+			from users
+			where id=#{id} and password=#{password}
+        ]]> <!-- 쿼리문을 태그가 아니라 문자열로만 봐달라 -->  <!-- map을 입력받아서, UserVo 형태로 출력 -->
+	</select>
+	
+	<select id="selectUserNo" parameterType="String" resultType="int"> <!-- db에서 값을 가져오겠다 resultmap은 db로 부터 값을 읽어올때, 변수이름 맞춰주어 결과데이터가 저장될 데이터의 타입, select에서 이용-->
+		<![CDATA[
+			select user_no
+			from users
+			where id=#{id}
+        ]]> <!-- 쿼리문을 태그가 아니라 문자열로만 봐달라 -->  <!-- map을 입력받아서, UserVo 형태로 출력 -->
+	</select>
+	
+	<select id="selectApiUserCheck" parameterType="String" resultMap="resultMapList">
+		<![CDATA[
+			select user_no, id, user_name, password, join_date
+			from users
+			where id=#{id}
+        ]]>
+	</select>
+
+</mapper>

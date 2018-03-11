@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="blog">
+
+	<resultMap type="com.javaex.vo.BlogVo" id="resultMapList">
+		<result column="user_no" property="userNo" />
+		<result column="blog_title" property="blogTitle" /> <!-- column이 db변수이름, property가 vo변수이름 -->
+		<result column="logo_file" property="logoFile" /> <!-- db변수이름을 vo변수이름으로 변경 -->
+	</resultMap>
+
+	<insert id="insertBlog" parameterType="int">
+	<![CDATA[
+		insert into blog
+		values (#{userNo}, ' ', 'spring-logo.jpg')
+	]]>
+	</insert>
+	
+	<insert id="defaultCategory" parameterType="int">
+	<![CDATA[
+		insert into category
+		values (seq_category_no.nextval, #{userNo}, '미분류', '기본으로 만들어지는 카테고리 입니다.', sysdate)
+	]]>
+	</insert>
+	
+	<select id="selectMainImg" parameterType="int" resultMap="resultMapList"> <!-- db에서 값을 가져오겠다 resultmap은 db로 부터 값을 읽어올때, 변수이름 맞춰주어 결과데이터가 저장될 데이터의 타입, select에서 이용-->
+		<![CDATA[
+			select user_no, blog_title, logo_file
+			from blog
+			where user_no=#{userNo}
+        ]]> <!-- 쿼리문을 태그가 아니라 문자열로만 봐달라 -->  <!-- map을 입력받아서, UserVo 형태로 출력 -->
+	</select>
+
+	<update id="updateUpload" parameterType="com.javaex.vo.BlogVo">
+		<![CDATA[
+			update blog
+			set blog_title=#{blogTitle}
+			]]>
+			<if test="logoFile != null and logoFile != ''">
+			, logo_file=#{logoFile}
+			</if>
+			<![CDATA[
+			where user_no=#{userNo}
+		]]>
+	</update>
+	
+	<select id="selectApiCategoryList" parameterType="int" resultType="com.javaex.vo.CategoryVo"> <!-- db에서 값을 가져오겠다 resultmap은 db로 부터 값을 읽어올때, 변수이름 맞춰주어 결과데이터가 저장될 데이터의 타입, select에서 이용-->
+		<![CDATA[
+			select rownum "rn",
+        			cate_no "cateNo",
+        			user_no "userNo",
+        			cate_name "cateName",
+        			description "description",
+        			reg_date "regDate",
+        			post_count "postCount"
+        from (select ca.cate_no,
+                    user_no,
+                    cate_name,
+                    description,
+                    reg_date,
+                    po.post_count
+                from category ca, (select ca.cate_no, count(post_no) post_count
+                                            from category ca, post po
+                                            where ca.cate_no=po.cate_no(+)
+                                            group by ca.cate_no) po 
+                where ca.cate_no=po.cate_no
+                order by ca.cate_no asc) a
+		where user_no=#{userNo}
+        ]]> <!-- 쿼리문을 태그가 아니라 문자열로만 봐달라 -->  <!-- map을 입력받아서, UserVo 형태로 출력 -->
+	</select>
+	
+	<insert id="insertCategory" parameterType="com.javaex.vo.CategoryVo" >
+		<selectKey keyProperty="cateNo" resultType="int" order="BEFORE"> <!-- category.no db에서 지정하고 여기서 또 지정 가능한가? -->
+			select seq_category_no.nextval from dual
+		</selectKey>
+		<![CDATA[
+			insert into Category 
+			values (#{cateNo}, #{userNo}, #{cateName}, #{description}, sysdate)
+		]]>
+	</insert>
+	
+	<delete id="deleteCategory" parameterType="int"> <!-- 하나씩 받을 때는 parameterType=int, String 이런식으로 써줘도 됨 -->
+		<![CDATA[
+			delete from category
+			where cate_no=#{cateNo}
+		]]>
+	</delete>
+	
+	<select id="deleteConfirm" parameterType="int" resultType="int">
+		<![CDATA[
+			select nvl(post_count,0) "postCount"
+			from category ca, (select cate_no, count(post_no) post_count
+                    			from post
+                    			group by cate_no) a
+			where ca.cate_no=a.cate_no(+)
+			and ca.cate_no=#{cateNo}
+		]]>
+	</select>
+	
+	<insert id="insertPost" parameterType="com.javaex.vo.PostVo">
+		<![CDATA[
+			insert into post
+			values (seq_post_no.nextval, #{cateNo}, #{postTitle}, #{postContent}, sysdate)
+		]]>
+	</insert>
+	
+	<select id="selectPostListByuserNo" parameterType="int" resultType="com.javaex.vo.PostVo"> <!-- db에서 값을 가져오겠다 resultmap은 db로 부터 값을 읽어올때, 변수이름 맞춰주어 결과데이터가 저장될 데이터의 타입, select에서 이용-->
+		<![CDATA[
+			select post_no "postNo", 
+       				po.cate_no "cateNo",
+        			post_title "postTitle", 
+        			post_content "postContent", 
+        			to_char(po.reg_date, 'YYYY-MM-DD') "regDate"
+			from post po, category ca
+			where po.cate_no=ca.cate_no
+			and ca.user_no=#{userNo}
+			order by po.reg_date desc
+        ]]>
+	</select>
+	
+	<select id="selectPostListByuserNoCateNo" parameterType="map"  resultType="com.javaex.vo.PostVo">
+		<![CDATA[
+			select post_no "postNo", 
+       				po.cate_no "cateNo",
+        			post_title "postTitle", 
+        			post_content "postContent", 
+        			to_char(po.reg_date, 'YYYY-MM-DD') "regDate"
+ 			from post po, category ca
+ 			where po.cate_no=ca.cate_no 
+ 			and ca.user_no=#{userNo} 
+ 			and po.cate_no=#{selectedCateNo}
+ 			order by po.reg_date desc
+		]]>
+	</select>
+	
+	<select id="selectTitleContentByUserNo" parameterType="int"  resultType="com.javaex.vo.PostVo">
+		<![CDATA[
+			select post_title "postTitle", 
+					post_content "postContent"
+			from (select rownum rn, post_title, post_content
+					from (select post_title, post_content
+							from post po, category ca
+							where po.cate_no=ca.cate_no and ca.user_no=#{userNo}
+							order by po.reg_date desc))
+			where rn=1
+		]]>
+	</select>
+
+	<select id="selectPostByPostNo" parameterType="String"  resultType="com.javaex.vo.PostVo">
+		<![CDATA[
+			select post_title "postTitle", post_content "postContent"
+			from post
+			where post_no=#{postNo}
+		]]>
+	</select>
+
+	<select id="selectTitleContentByCateNo" parameterType="map"  resultType="com.javaex.vo.PostVo">
+		<![CDATA[
+			select post_title "postTitle", 
+					post_content "postContent"
+			from (select rownum rn, post_title, post_content
+					from (select post_title, post_content
+							from post po, category ca
+							where po.cate_no=ca.cate_no and ca.user_no=#{userNo} and po.cate_no=#{selectedCateNo}
+							order by po.reg_date desc))
+			where rn=1
+		]]>
+	</select>
+	
+</mapper>
