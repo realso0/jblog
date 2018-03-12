@@ -17,21 +17,27 @@ public class UserService {
 	private BlogDao blogDao;
 	
 	@Transactional
-	public int join(UserVo userVo) {
-		if (userVo.getId()!=null&&userVo.getId()!=""&&
+	public int join(UserVo userVo) throws Exception {
+		try {
+			if (userVo.getId()!=null&&userVo.getId()!=""&&
 				userVo.getPassword()!=null&&userVo.getPassword()!=""&&
-				userVo.getPassword().length()>=8&&userVo.getPassword().length()<=15&&
-				!(userVo.getId().equals(userDao.selectApiUserCheck(userVo.getId()).getId()))) {
+				userVo.getPassword().length()>=8&&userVo.getPassword().length()<=15/*&& 
+				!(userVo.getId()).equals((userDao.selectApiUserCheck(userVo.getId())).getId())*/) {
 			System.out.println(userVo); //userNo 없음.
 			userDao.insertJoin(userVo);
 			System.out.println(userVo); //들어갔다오면 userNo를 입력받고 나옴.
 			blogDao.insertBlog(userVo.getUserNo());
+			blogDao.insertBlog(userVo.getUserNo()); //일부러 오류발생 시킴, 왜 롤백 안되는가?
 			blogDao.defaultCategory(userVo.getUserNo());
 			System.out.println();
-			return 1;
-		} else {
+			}
+		}
+		catch(Exception e){
+			e.printStackTrace();
+			System.out.println("Exception 발생");
 			return 0;
 		}
+		return 1;
 	}
 	
 	public UserVo login(String id, String password) {

@@ -26,7 +26,7 @@ public class UserController {
 	}
 	
 	@RequestMapping(value="/joinsuccess")
-	public String join(@ModelAttribute UserVo userVo) {
+	public String join(@ModelAttribute UserVo userVo) throws Exception {
 		System.out.println("joinsuccess 진입");
 		int result=userService.join(userVo);
 		if (result==1) {

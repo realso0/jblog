@@ -50,13 +50,23 @@
 	</bean>
 
 	<!-- transactionManager -->
-	<bean id="transactionManager"
+	<bean id="txManager"
 		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
 		<property name="dataSource" ref="oracleDatasource"></property> <!-- DB를 참조함. -->
 	</bean>
 
-	<tx:annotation-driven transaction-manager="transactionManager" />
-
-	<!-- aop설정 -->
+	<!-- <tx:annotation-driven transaction-manager="txManager" /> -->
+	<tx:advice id="txAdvice" transaction-manager="txManager">
+		<tx:attributes>
+			<tx:method name="join" rollback-for="Exception"/>
+		</tx:attributes>
+	</tx:advice>
+	
+	<aop:config>
+		<aop:pointcut id="txPointcut" expression="execution(* com.javaex.service..*(..))"/>
+		<aop:advisor pointcut-ref="txPointcut" advice-ref="txAdvice"/>
+	</aop:config>
+	
+	<!-- aop설정(어노테이션) -->
 	<aop:aspectj-autoproxy></aop:aspectj-autoproxy>
 </beans>
