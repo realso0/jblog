@@ -9,7 +9,7 @@ public class AuthInterceptor extends HandlerInterceptorAdapter{
 	
 	@Override
 	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-		if(request.getSession().getAttribute("login") == null){
+		if(request.getSession().getAttribute("authUser") == null){
 			response.sendRedirect("/");
 			return false;
 		}

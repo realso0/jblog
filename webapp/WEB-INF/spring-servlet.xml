@@ -59,4 +59,19 @@
 	<!-- mapping이 url로 받는 주소값(하드에 저장될 위치), location이 서버(db) 저장소의 주소값 -->
 	<!-- mapping 주소로 부터 오면, location을 뒤져라 -->
 	<!-- * 별 하나는 하위 한칸, **는 하위 두칸 -->
+	
+	<!-- <beans:bean class="com.javaex.interceptor.LoginInterceptor" id="loginInterceptor"/>
+	
+	인터셉터 등록
+	<mvc:interceptors>
+		<mvc:interceptor>
+			<mvc:mapping path="/loginaction"/>
+			<beans:ref bean="loginInterceptor"/>
+		</mvc:interceptor>
+		<mvc:interceptor>
+			<mvc:mapping path="/{id}/**"/>
+			<bean class="com.javaex.interceptor.AuthInterceptor"/>
+		</mvc:interceptor>
+	</mvc:interceptors> -->
+	
 </beans>

@@ -4,6 +4,7 @@ import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -43,10 +44,11 @@ public class UserController {
 	}
 	
 	@RequestMapping(value="/loginaction")
-	public String login(@RequestParam("id") String id, @RequestParam("password") String password, HttpSession session) {
+	public String login(Model model, @RequestParam("id") String id, @RequestParam("password") String password, HttpSession session) 
+			throws Exception {
 		System.out.println("loginaction 진입");
 		UserVo authUser = userService.login(id, password);
-		
+
 		if (authUser == null) {
 			System.out.println("로그인 실패");
 			return "redirect:/user/login?result=fail";
@@ -55,6 +57,13 @@ public class UserController {
 			session.setAttribute("authUser", authUser);
 			return "redirect:/";
 		}
+		/* 로그인 인터셉터 구현시 if문 필요없을듯??
+		System.out.println("loginaction 진입");
+		UserVo authUser = userService.login(id, password);
+		
+		model.addAttribute("authUser", authUser);
+
+		return "redirect:/";*/
 	}
 	
 	@RequestMapping(value="/logout")

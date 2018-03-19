@@ -16,9 +16,9 @@ public class LoginInterceptor extends HandlerInterceptorAdapter {
 	public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler,
 			ModelAndView modelAndView) throws Exception {
 		ModelMap modelMap = modelAndView.getModelMap();
-		Object loginVO = modelMap.get("login");
+		Object loginVO = modelMap.get("authUser");
 		if (loginVO != null) {
-			request.getSession().setAttribute("login", loginVO);
+			request.getSession().setAttribute("authUser", loginVO);
 		} else {
 			modelMap.put("loginmsg", "Login Failed");
 		}
